@@ -5,7 +5,7 @@ GO_FILES=$(wildcard *.go)
 # Swagger 相關變量
 SWAG_VERSION=v1.16.4
 
-.PHONY: all build clean run swag-init swag-install help
+.PHONY: all build clean run swag-init swag-install help docker-build docker-run docker-stop docker-clean
 
 # 顯示所有可用的命令
 help:
@@ -16,6 +16,10 @@ help:
 	@echo "make swagger  - 生成 Swagger 文檔（需要先安裝 swag）"
 	@echo "make install-swagger - 安裝 Swagger 工具"
 	@echo "make all      - 清理、安裝依賴、生成文檔並編譯"
+	@echo "make docker-build - 建立 Docker 映像"
+	@echo "make docker-run   - 運行 Docker 容器（包含 PostgreSQL 和 Redis）"
+	@echo "make docker-stop  - 停止所有 Docker 容器"
+	@echo "make docker-clean - 清理 Docker 容器和映像"
 
 # 編譯應用程序
 build:
@@ -46,6 +50,34 @@ swagger:
 
 # 執行所有步驟
 all: clean install-swagger swagger build
+
+# Docker 相關命令
+docker-build:
+	@echo "建立 Docker 映像..."
+	docker-compose build
+
+# 運行 Docker 容器
+docker-run:
+	@echo "運行 Docker 容器..."
+	docker-compose up -d
+	@echo "服務啟動中，請稍候..."
+	@sleep 5
+	@echo "服務已啟動："
+	@echo "- API: http://localhost:3003"
+	@echo "- Swagger: http://localhost:3003/swagger/index.html"
+	@echo "- PostgreSQL: localhost:5432"
+	@echo "- Redis: localhost:6379"
+
+# 停止 Docker 容器
+docker-stop:
+	@echo "停止 Docker 容器..."
+	docker-compose down
+
+# 清理 Docker 資源
+docker-clean:
+	@echo "清理 Docker 資源..."
+	docker-compose down -v --rmi all
+	@echo "已清理所有 Docker 容器和映像"
 
 # 如何使用 Swagger：
 # 1. 首先執行 'make install-swagger' 安裝 Swagger 工具
