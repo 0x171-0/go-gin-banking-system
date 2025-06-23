@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"go-gin-template/api/dto"
 	"go-gin-template/api/service"
 	"net/http"
 	"strconv"
@@ -48,13 +49,6 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	c.JSON(http.StatusOK, book)
 }
 
-// CreateBookRequest represents the request body for creating a book
-type CreateBookRequest struct {
-	// The title of the book
-	Title string `json:"title" example:"The Go Programming Language"`
-	// The author of the book
-	Author string `json:"author" example:"Alan A. A. Donovan"`
-}
 
 // CreateBook godoc
 // @Summary Create a new book
@@ -62,12 +56,12 @@ type CreateBookRequest struct {
 // @Tags books
 // @Accept json
 // @Produce json
-// @Param book body CreateBookRequest true "Book information"
+// @Param book body dto.CreateBookRequest true "Book information"
 // @Success 201 {object} model.Book
 // @Failure 400 {object} object "Invalid input"
 // @Router /books [post]
 func (h *BookHandler) CreateBook(c *gin.Context) {
-	var req CreateBookRequest
+	var req dto.CreateBookRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
