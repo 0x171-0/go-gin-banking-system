@@ -1,4 +1,4 @@
-module go-gin-template
+module github.com/white/go-gin-template
 
 go 1.22.2
 

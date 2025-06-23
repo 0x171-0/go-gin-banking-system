@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"go-gin-template/service"
+	"github.com/white/go-gin-template/api/service"
 	"net/http"
 	"strconv"
 

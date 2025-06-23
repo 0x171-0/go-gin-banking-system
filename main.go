@@ -1,10 +1,10 @@
 package main
 
 import (
-	"go-gin-template/api"
+	"github.com/white/go-gin-template/api"
 )
 
 func main() {
 	r := api.InitRouter()
-	r.Run(":8080")
+	r.Run(":3002")
 }
