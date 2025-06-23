@@ -1,12 +1,29 @@
 basePath: /
 definitions:
+  handler.CreateBookRequest:
+    properties:
+      author:
+        description: The author of the book
+        example: Alan A. A. Donovan
+        type: string
+      title:
+        description: The title of the book
+        example: The Go Programming Language
+        type: string
+    type: object
   model.Book:
     properties:
       author:
+        description: The author of the book
+        example: John Doe
         type: string
       id:
+        description: The unique identifier of the book
+        example: 1
         type: integer
       title:
+        description: The title of the book
+        example: Go Programming
         type: string
     type: object
 host: localhost:3003
@@ -38,12 +55,12 @@ paths:
       - application/json
       description: Create a new book with the given title and author
       parameters:
-      - description: Book object
+      - description: Book information
         in: body
         name: book
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/handler.CreateBookRequest'
       produces:
       - application/json
       responses:

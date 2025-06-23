@@ -48,21 +48,26 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	c.JSON(http.StatusOK, book)
 }
 
+// CreateBookRequest represents the request body for creating a book
+type CreateBookRequest struct {
+	// The title of the book
+	Title string `json:"title" example:"The Go Programming Language"`
+	// The author of the book
+	Author string `json:"author" example:"Alan A. A. Donovan"`
+}
+
 // CreateBook godoc
 // @Summary Create a new book
 // @Description Create a new book with the given title and author
 // @Tags books
 // @Accept json
 // @Produce json
-// @Param book body object true "Book object"
+// @Param book body CreateBookRequest true "Book information"
 // @Success 201 {object} model.Book
 // @Failure 400 {object} object "Invalid input"
 // @Router /books [post]
 func (h *BookHandler) CreateBook(c *gin.Context) {
-	var req struct {
-		Title  string `json:"title"`
-		Author string `json:"author"`
-	}
+	var req CreateBookRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -54,12 +54,12 @@ const docTemplate = `{
                 "summary": "Create a new book",
                 "parameters": [
                     {
-                        "description": "Book object",
+                        "description": "Book information",
                         "name": "book",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/handler.CreateBookRequest"
                         }
                     }
                 ],
@@ -119,17 +119,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handler.CreateBookRequest": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "description": "The author of the book",
+                    "type": "string",
+                    "example": "Alan A. A. Donovan"
+                },
+                "title": {
+                    "description": "The title of the book",
+                    "type": "string",
+                    "example": "The Go Programming Language"
+                }
+            }
+        },
         "model.Book": {
             "type": "object",
             "properties": {
                 "author": {
-                    "type": "string"
+                    "description": "The author of the book",
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "id": {
-                    "type": "integer"
+                    "description": "The unique identifier of the book",
+                    "type": "integer",
+                    "example": 1
                 },
                 "title": {
-                    "type": "string"
+                    "description": "The title of the book",
+                    "type": "string",
+                    "example": "Go Programming"
                 }
             }
         }
