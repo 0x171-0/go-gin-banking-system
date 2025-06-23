@@ -1,0 +1,86 @@
+basePath: /
+definitions:
+  model.Book:
+    properties:
+      author:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+host: localhost:3003
+info:
+  contact: {}
+  description: This is a sample book service API
+  title: Book API
+  version: "1.0"
+paths:
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all books
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Book'
+            type: array
+      summary: Get all books
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Create a new book with the given title and author
+      parameters:
+      - description: Book object
+        in: body
+        name: book
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+      summary: Create a new book
+      tags:
+      - books
+  /books/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a specific book
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "404":
+          description: 找不到書籍
+          schema:
+            type: object
+      summary: Get a book by ID
+      tags:
+      - books
+swagger: "2.0"
