@@ -36,68 +36,68 @@ paths:
   /books:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get a list of all books
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Book'
+              $ref: "#/definitions/model.Book"
             type: array
       summary: Get all books
       tags:
-      - books
+        - books
     post:
       consumes:
-      - application/json
+        - application/json
       description: Create a new book with the given title and author
       parameters:
-      - description: Book information
-        in: body
-        name: book
-        required: true
-        schema:
-          $ref: '#/definitions/handler.CreateBookRequest'
+        - description: Book information
+          in: body
+          name: book
+          required: true
+          schema:
+            $ref: "#/definitions/handler.CreateBookRequest"
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.Book'
+            $ref: "#/definitions/model.Book"
         "400":
           description: Invalid input
           schema:
             type: object
       summary: Create a new book
       tags:
-      - books
+        - books
   /books/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Get details of a specific book
       parameters:
-      - description: Book ID
-        in: path
-        name: id
-        required: true
-        type: integer
+        - description: Book ID
+          in: path
+          name: id
+          required: true
+          type: integer
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Book'
+            $ref: "#/definitions/model.Book"
         "404":
           description: 找不到書籍
           schema:
             type: object
       summary: Get a book by ID
       tags:
-      - books
+        - books
 swagger: "2.0"

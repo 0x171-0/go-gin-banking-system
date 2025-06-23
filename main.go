@@ -2,11 +2,13 @@ package main
 
 import (
 	"go-gin-template/api"
+	"go-gin-template/api/config"
+	"go-gin-template/api/model"
+	_ "go-gin-template/docs"
 	"log"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "go-gin-template/docs"
 )
 
 // @title Book API
@@ -16,6 +18,15 @@ import (
 // @BasePath /
 
 func main() {
+	// Initialize database connections
+	config.InitDB()
+	config.InitRedis()
+
+	// Auto migrate database schema
+	if err := config.DB.AutoMigrate(&model.Book{}); err != nil {
+		log.Fatal("Failed to migrate database schema:", err)
+	}
+
 	r := api.InitRouter()
 
 	// Swagger documentation endpoint
@@ -24,5 +35,7 @@ func main() {
 	// Print Swagger documentation URL
 	log.Printf("Swagger 文檔可在 http://localhost:3003/swagger/index.html 查看")
 
-	r.Run(":3003")
+	if err := r.Run(":3003"); err != nil {
+		log.Fatal(err)
+	}
 }
