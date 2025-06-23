@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/white/go-gin-template/api/handler"
-	"github.com/white/go-gin-template/api/service"
+	"go-gin-template/api/handler"
+	"go-gin-template/api/service"
 
 	"github.com/gin-gonic/gin"
 )

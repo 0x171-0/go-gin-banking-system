@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"github.com/white/go-gin-template/api/model"
+	"go-gin-template/api/model"
 )
 
 type BookService struct {

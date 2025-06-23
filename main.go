@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/white/go-gin-template/api"
+	"go-gin-template/api"
 )
 
 func main() {
