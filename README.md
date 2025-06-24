@@ -9,4 +9,7 @@ go mod init go-gin-template
 go install github.com/swaggo/swag/cmd/swag@latest
 
 go get -u github.com/swaggo/gin-swagger github.com/swaggo/files
+
+# 安裝 jwt 套件
+go get github.com/golang-jwt/jwt/v5
 ```
