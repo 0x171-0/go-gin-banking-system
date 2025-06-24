@@ -52,13 +52,15 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 
 // CreateBook godoc
 // @Summary Create a new book
-// @Description Create a new book with the given title and author
+// @Description Create a new book with the provided information
 // @Tags books
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param book body dto.CreateBookRequest true "Book information"
 // @Success 201 {object} model.Book
 // @Failure 400 {object} object "Invalid input"
+// @Failure 401 {object} object "Unauthorized"
 // @Router /books [post]
 func (h *BookHandler) CreateBook(c *gin.Context) {
 	var req dto.CreateBookRequest

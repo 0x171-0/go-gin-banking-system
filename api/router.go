@@ -12,11 +12,11 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.New()
 
-	// Use logger and recovery middleware
-	r.Use(gin.Logger())
+	// Use recovery middleware
 	r.Use(gin.Recovery())
 
-	// Use custom error handler
+	// Use custom access logger and error handler
+	r.Use(middleware.AccessLogger())
 	r.Use(middleware.ErrorHandler())
 
 	// Book endpoints

@@ -72,12 +72,16 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 // GetProfile godoc
 // @Summary Get user profile
-// @Description Get the profile of the authenticated user
+// @Description Get user profile by ID
 // @Tags users
 // @Accept json
 // @Produce json
 // @Param id path int true "User ID"
+// @Security BearerAuth
 // @Success 200 {object} dto.UserResponse
+// @Failure 400 {object} object "Invalid user ID"
+// @Failure 401 {object} object "Unauthorized"
+// @Failure 403 {object} object "Forbidden"
 // @Failure 404 {object} object "User not found"
 // @Router /users/{id} [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
@@ -99,14 +103,18 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 // UpdateProfile godoc
 // @Summary Update user profile
-// @Description Update the profile of the authenticated user
+// @Description Update user profile by ID
 // @Tags users
 // @Accept json
 // @Produce json
 // @Param id path int true "User ID"
-// @Param user body dto.UpdateUserRequest true "User information to update"
+// @Param user body dto.UpdateUserRequest true "User info to update"
+// @Security BearerAuth
 // @Success 200 {object} dto.UserResponse
 // @Failure 400 {object} object "Invalid input"
+// @Failure 401 {object} object "Unauthorized"
+// @Failure 403 {object} object "Forbidden"
+// @Failure 404 {object} object "User not found"
 // @Router /users/{id} [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)

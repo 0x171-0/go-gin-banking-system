@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  handler.CreateBookRequest:
+  dto.CreateBookRequest:
     properties:
       author:
         description: The author of the book
@@ -11,19 +11,145 @@ definitions:
         example: The Go Programming Language
         type: string
     type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.RegisterRequest:
+    properties:
+      address:
+        example: 123 Main St
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      phone:
+        example: "1234567890"
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      address:
+        example: 123 Main St
+        type: string
+      name:
+        example: John Doe
+        type: string
+      phone:
+        example: "1234567890"
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      address:
+        example: 123 Main St
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: John Doe
+        type: string
+      phone:
+        example: "1234567890"
+        type: string
+      role:
+        example: user
+        type: string
+    type: object
   model.Book:
     properties:
       author:
         description: The author of the book
         example: John Doe
         type: string
+      category:
+        allOf:
+        - $ref: '#/definitions/model.Category'
+        description: Category relationship
+      category_id:
+        description: Category ID
+        type: integer
+      cover_url:
+        description: Book cover image URL
+        type: string
+      created_at:
+        description: Creation time
+        type: string
+      description:
+        description: Book description
+        type: string
       id:
         description: The unique identifier of the book
-        example: 1
+        type: integer
+      isbn:
+        description: The ISBN of the book
+        type: string
+      price:
+        description: The price of the book
+        type: number
+      pub_date:
+        description: Publication date
+        type: string
+      publisher:
+        description: Book publisher
+        type: string
+      stock:
+        description: The stock quantity
         type: integer
       title:
         description: The title of the book
         example: Go Programming
+        type: string
+      updated_at:
+        description: Update time
+        type: string
+    type: object
+  model.Category:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/model.Book'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
         type: string
     type: object
 host: localhost:3003
@@ -36,68 +162,214 @@ paths:
   /books:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Get a list of all books
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/model.Book"
+              $ref: '#/definitions/model.Book'
             type: array
       summary: Get all books
       tags:
-        - books
+      - books
     post:
       consumes:
-        - application/json
-      description: Create a new book with the given title and author
+      - application/json
+      description: Create a new book with the provided information
       parameters:
-        - description: Book information
-          in: body
-          name: book
-          required: true
-          schema:
-            $ref: "#/definitions/handler.CreateBookRequest"
+      - description: Book information
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBookRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/model.Book"
+            $ref: '#/definitions/model.Book'
         "400":
           description: Invalid input
           schema:
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
       summary: Create a new book
       tags:
-        - books
+      - books
   /books/{id}:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Get details of a specific book
       parameters:
-        - description: Book ID
-          in: path
-          name: id
-          required: true
-          type: integer
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/model.Book"
+            $ref: '#/definitions/model.Book'
         "404":
           description: 找不到書籍
           schema:
             type: object
       summary: Get a book by ID
       tags:
-        - books
+      - books
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user profile by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            type: object
+        "404":
+          description: User not found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user profile by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User info to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            type: object
+        "404":
+          description: User not found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return user information
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "401":
+          description: Authentication failed
+          schema:
+            type: object
+      summary: User login
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with the provided information
+      parameters:
+      - description: User registration information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+      summary: Register a new user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -16,6 +16,10 @@ import (
 // @host localhost:3003
 // @BasePath /
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 func main() {
 	// Initialize database connections
 	config.InitDB()

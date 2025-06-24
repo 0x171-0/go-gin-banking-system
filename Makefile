@@ -44,20 +44,20 @@ install-swagger:
 	go install github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION)
 
 # 生成 Swagger 文檔
-swagger:
+doc:
 	@echo "生成 Swagger 文檔..."
 	swag init
 
 # 執行所有步驟
-all: clean install-swagger swagger build
+all: clean install-swagger doc build
 
 # Docker 相關命令
-docker-build:
+d-build:
 	@echo "建立 Docker 映像..."
 	docker-compose build
 
 # 運行 Docker 容器
-docker-run:
+up:
 	@echo "運行 Docker 容器..."
 	docker-compose up -d
 	@echo "服務啟動中，請稍候..."
@@ -69,12 +69,12 @@ docker-run:
 	@echo "- Redis: localhost:6379"
 
 # 停止 Docker 容器
-docker-stop:
+down:
 	@echo "停止 Docker 容器..."
 	docker-compose down
 
 # 清理 Docker 資源
-docker-clean:
+clean:
 	@echo "清理 Docker 資源..."
 	docker-compose down -v --rmi all
 	@echo "已清理所有 Docker 容器和映像"
