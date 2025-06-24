@@ -10,7 +10,14 @@ import (
 )
 
 func InitRouter() *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+
+	// Use logger and recovery middleware
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+
+	// Use custom error handler
+	r.Use(middleware.ErrorHandler())
 
 	// Book endpoints
 	bookRepo := repository.NewBookRepository()

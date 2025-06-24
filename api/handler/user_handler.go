@@ -1,11 +1,11 @@
 package handler
 
 import (
+	"go-gin-template/api/dto"
+	"go-gin-template/api/middleware"
+	"go-gin-template/api/service"
 	"net/http"
 	"strconv"
-
-	"go-gin-template/api/dto"
-	"go-gin-template/api/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,13 +31,13 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 func (h *UserHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
 	user, err := h.userService.Register(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(middleware.BadRequestError(err.Error()))
 		return
 	}
 
@@ -57,13 +57,13 @@ func (h *UserHandler) Register(c *gin.Context) {
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
 	response, err := h.userService.Login(&req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.Error(middleware.UnauthorizedError())
 		return
 	}
 
@@ -83,14 +83,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		c.Error(middleware.BadRequestError("Invalid user ID"))
 		return
 	}
 
 	// User ID has already been validated by OwnerOrAdminAuthMiddleware
 	user, err := h.userService.GetUserByID(uint(id))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.Error(middleware.NotFoundError("User"))
 		return
 	}
 
@@ -111,20 +111,20 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		c.Error(middleware.BadRequestError("Invalid user ID"))
 		return
 	}
 
 	// User ID has already been validated by OwnerOrAdminAuthMiddleware
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(err)
 		return
 	}
 
 	user, err := h.userService.UpdateUser(uint(id), &req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.Error(middleware.InternalServerError())
 		return
 	}
 
