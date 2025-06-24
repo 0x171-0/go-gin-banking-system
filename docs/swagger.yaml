@@ -181,11 +181,11 @@ definitions:
       updated_at:
         type: string
     type: object
-host: localhost:8080
+host: localhost:3003
 info:
   contact: {}
-  description: This is a sample book service API
-  title: Book API
+  description: A RESTful API service with user authentication and account management
+  title: Go Gin API
   version: "1.0"
 paths:
   /accounts:

@@ -78,6 +78,8 @@ func InitDB() {
 			&model.Book{},
 			&model.Category{},
 			&model.User{},
+			&model.UserPassword{},
+			&model.Account{},
 			&model.Order{},
 			&model.OrderItem{},
 			&model.Cart{},

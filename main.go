@@ -3,16 +3,17 @@ package main
 import (
 	"go-gin-template/api"
 	"go-gin-template/api/config"
+	"go-gin-template/docs"
 	"log"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Book API
+// @title Go Gin API
 // @version 1.0
-// @description This is a sample book service API
-// @host localhost:8080
+// @description A RESTful API service with user authentication and account management
+// @host localhost:3003
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth
@@ -20,6 +21,9 @@ import (
 // @name Authorization
 
 func main() {
+	// Initialize Swagger docs
+	docs.SwaggerInfo.BasePath = "/"
+
 	// Initialize database connection
 	config.InitDB()
 

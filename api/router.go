@@ -15,6 +15,7 @@ func InitRouter() *gin.Engine {
 	bookRepo := repository.NewBookRepository(config.DB)
 	userRepo := repository.NewUserRepository(config.DB)
 	accountRepo := repository.NewAccountRepository(config.DB)
+	passwordRepo := repository.NewUserPasswordRepository(config.DB)
 	r := gin.Default()
 
 	// Use recovery middleware
@@ -36,12 +37,12 @@ func InitRouter() *gin.Engine {
 	// User endpoints
 	accountService := service.NewAccountService(accountRepo)
 
-	userService := service.NewUserService(userRepo, accountService)
+	userService := service.NewUserService(userRepo, passwordRepo, accountService)
 	userHandler := handler.NewUserHandler(userService)
 	users := r.Group("/users")
 	{
-		users.POST("/register", userHandler.Register)
 		users.POST("/login", userHandler.Login)
+		users.POST("/register", userHandler.Register)
 		users.GET("/:id", middleware.AuthMiddleware(), userHandler.GetProfile)
 		users.PUT("/:id", middleware.AuthMiddleware(), userHandler.UpdateProfile)
 	}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+
 	"go-gin-template/api/dto"
 	"go-gin-template/api/model"
 	"go-gin-template/api/repository"
@@ -18,12 +19,17 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepo repository.UserRepository
-	accountService AccountService
+	userRepo         repository.UserRepository
+	passwordRepo     repository.UserPasswordRepository
+	accountService   AccountService
 }
 
-func NewUserService(userRepo repository.UserRepository, accountService AccountService) UserService {
-	return &userService{userRepo: userRepo, accountService: accountService}
+func NewUserService(userRepo repository.UserRepository, passwordRepo repository.UserPasswordRepository, accountService AccountService) UserService {
+	return &userService{
+		userRepo:       userRepo,
+		passwordRepo:   passwordRepo,
+		accountService: accountService,
+	}
 }
 
 func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, error) {
@@ -44,13 +50,29 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 		Name:    req.Name,
 		Phone:   req.Phone,
 		Address: req.Address,
-		Password: &model.UserPassword{
-			HashedPassword: string(hashedPassword),
-			IsActive:      true,
-		},
 	}
 
+	// Create user first
 	if err := s.userRepo.Create(user); err != nil {
+		return nil, err
+	}
+
+	// Create password
+	password := &model.UserPassword{
+		UserID:         user.ID,
+		HashedPassword: string(hashedPassword),
+		IsActive:      true,
+	}
+
+	// Set password on user for response
+	user.Password = password
+
+	// Save password
+	if err := s.passwordRepo.DeactivateAll(user.ID); err != nil {
+		return nil, err
+	}
+
+	if err := s.passwordRepo.Create(password); err != nil {
 		return nil, err
 	}
 
@@ -65,9 +87,18 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 
 func (s *userService) Login(req *dto.LoginRequest) (*dto.LoginResponse, error) {
 	user, err := s.userRepo.FindByEmail(req.Email)
-	if err != nil || user.Password == nil || !user.Password.IsActive {
+	if err != nil {
 		return nil, errors.New("invalid email or password")
 	}
+
+	// Get active password
+	activePassword, err := s.passwordRepo.FindActiveByUserID(user.ID)
+	if err != nil {
+		return nil, errors.New("invalid email or password")
+	}
+
+	// Set active password on user
+	user.Password = activePassword
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password.HashedPassword), []byte(req.Password)); err != nil {
 		return nil, errors.New("invalid email or password")
