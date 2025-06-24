@@ -45,7 +45,6 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 		Address: req.Address,
 		Password: &model.UserPassword{
 			HashedPassword: string(hashedPassword),
-			Salt:          util.GenerateRandomString(32),
 			IsActive:      true,
 		},
 	}
