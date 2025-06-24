@@ -144,3 +144,38 @@ func (h *AccountHandler) Withdraw(c *gin.Context) {
 
 	c.JSON(http.StatusOK, account)
 }
+
+// @Summary Transfer money
+// @Description Transfer money from one account to another
+// @Tags accounts
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param id path int true "Source Account ID"
+// @Param request body dto.TransferRequest true "Transfer request"
+// @Success 200 {object} dto.AccountResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Router /accounts/{id}/transfer [post]
+func (h *AccountHandler) Transfer(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	sourceAccountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid source account ID"})
+		return
+	}
+
+	var req dto.TransferRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	account, err := h.accountService.Transfer(userID, uint(sourceAccountID), req.TargetAccountID, req.Amount)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
+}

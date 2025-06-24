@@ -2,6 +2,7 @@ package repository
 
 import (
 	"go-gin-template/api/model"
+
 	"gorm.io/gorm"
 )
 
@@ -11,6 +12,7 @@ type AccountRepository interface {
 	FindByUserID(userID uint) ([]*model.Account, error)
 	FindDefaultByUserID(userID uint) (*model.Account, error)
 	Update(account *model.Account) error
+	GetDB() *gorm.DB
 }
 
 type accountRepository struct {
@@ -54,4 +56,8 @@ func (r *accountRepository) FindDefaultByUserID(userID uint) (*model.Account, er
 
 func (r *accountRepository) Update(account *model.Account) error {
 	return r.db.Save(account).Error
+}
+
+func (r *accountRepository) GetDB() *gorm.DB {
+	return r.db
 }

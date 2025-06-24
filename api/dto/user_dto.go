@@ -56,3 +56,9 @@ type AccountResponse struct {
 type TransactionRequest struct {
 	Amount float64 `json:"amount" binding:"required,gt=0" example:"100.50"`
 }
+
+// TransferRequest represents the request body for transfer
+type TransferRequest struct {
+	Amount           float64 `json:"amount" binding:"required,gt=0" example:"100.50"`
+	TargetAccountID uint    `json:"target_account_id" binding:"required"`
+}
