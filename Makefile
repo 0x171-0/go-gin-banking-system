@@ -3,7 +3,11 @@ BINARY_NAME=go-gin-template
 GO_FILES=$(wildcard *.go)
 
 # Swagger 相關變量
-SWAG_VERSION=v1.16.4
+SWAG_VERSION=latest
+MIGRATE_VERSION=v4.17.0
+
+# 數據庫連接信息
+DB_URL=postgres://postgres:postgres@localhost:5432/bookstore?sslmode=disable
 
 .PHONY: all build clean run swag-init swag-install help docker-build docker-run docker-stop docker-clean
 
@@ -13,13 +17,17 @@ help:
 	@echo "make build    - 編譯應用程序"
 	@echo "make run      - 運行應用程序"
 	@echo "make clean    - 清理編譯文件"
-	@echo "make swagger  - 生成 Swagger 文檔（需要先安裝 swag）"
+	@echo "make doc      - 生成 Swagger 文檔（需要先安裝 swag）"
 	@echo "make install-swagger - 安裝 Swagger 工具"
+	@echo "make install-migrate - 安裝 migrate 工具"
+	@echo "make migrate-up     - 執行數據庫遷移"
+	@echo "make migrate-down   - 回滾數據庫遷移"
+	@echo "make migrate-create - 創建新的遷移文件"
 	@echo "make all      - 清理、安裝依賴、生成文檔並編譯"
-	@echo "make docker-build - 建立 Docker 映像"
-	@echo "make docker-run   - 運行 Docker 容器（包含 PostgreSQL 和 Redis）"
-	@echo "make docker-stop  - 停止所有 Docker 容器"
-	@echo "make docker-clean - 清理 Docker 容器和映像"
+	@echo "make d-build  - 建立 Docker 映像"
+	@echo "make up       - 運行 Docker 容器（包含 PostgreSQL 和 Redis）"
+	@echo "make down     - 停止所有 Docker 容器"
+	@echo "make clean    - 清理 Docker 容器和映像"
 
 # 編譯應用程序
 build:
@@ -32,16 +40,37 @@ run:
 	go run main.go
 
 # 清理編譯文件
-clean:
+go-clean:
 	@echo "清理編譯文件..."
 	go clean
 	rm -f $(BINARY_NAME)
 	rm -rf docs
 
-# 安裝 Swagger 工具
+# 安裝工具
 install-swagger:
 	@echo "安裝 Swagger 工具..."
 	go install github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION)
+
+# 安裝 migrate 工具
+install-migrate:
+	@echo "安裝 migrate 工具..."
+	# brew install golang-migrate
+	# 或手動安裝
+	# https://github.com/golang-migrate/migrate#installation
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@$(MIGRATE_VERSION)
+
+# 數據庫遷移命令
+migrate-up:
+	@echo "執行數據庫遷移..."
+	migrate -database "$(DB_URL)" -path scripts/migrations up
+
+migrate-down:
+	@echo "回滾數據庫遷移..."
+	migrate -database "$(DB_URL)" -path scripts/migrations down
+
+migrate-create: # 創建空的遷移文件，SQL 要自己填
+	@read -p "Enter migration name: " name; \
+	migrate create -ext sql -dir scripts/migrations -seq $$name
 
 # 生成 Swagger 文檔
 doc:
