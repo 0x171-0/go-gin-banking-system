@@ -39,12 +39,15 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 
 	// Create user
 	user := &model.User{
-		Email:    req.Email,
-		Password: string(hashedPassword),
-		Name:     req.Name,
-		Phone:    req.Phone,
-		Address:  req.Address,
-		Role:     "user", // Default role
+		Email:   req.Email,
+		Name:    req.Name,
+		Phone:   req.Phone,
+		Address: req.Address,
+		Password: &model.UserPassword{
+			HashedPassword: string(hashedPassword),
+			Salt:          util.GenerateRandomString(32),
+			IsActive:      true,
+		},
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -56,16 +59,22 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 
 func (s *userService) Login(req *dto.LoginRequest) (*dto.LoginResponse, error) {
 	user, err := s.userRepo.FindByEmail(req.Email)
-	if err != nil {
+	if err != nil || user.Password == nil || !user.Password.IsActive {
 		return nil, errors.New("invalid email or password")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password.HashedPassword), []byte(req.Password)); err != nil {
 		return nil, errors.New("invalid email or password")
+	}
+
+	// Get role name for token
+	roleName := "user"
+	if user.Role != nil {
+		roleName = user.Role.Name
 	}
 
 	// Generate JWT token
-	token, err := util.GenerateToken(user.ID, user.Role)
+	token, err := util.GenerateToken(user.ID, roleName)
 	if err != nil {
 		return nil, err
 	}
@@ -109,12 +118,17 @@ func (s *userService) UpdateUser(id uint, req *dto.UpdateUserRequest) (*dto.User
 
 // Helper function to convert User model to UserResponse DTO
 func toUserResponse(user *model.User) *dto.UserResponse {
+	roleName := "user"
+	if user.Role != nil {
+		roleName = user.Role.Name
+	}
+
 	return &dto.UserResponse{
 		ID:      user.ID,
 		Email:   user.Email,
 		Name:    user.Name,
 		Phone:   user.Phone,
 		Address: user.Address,
-		Role:    user.Role,
+		Role:    roleName,
 	}
 }

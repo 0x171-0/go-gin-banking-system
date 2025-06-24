@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"go-gin-template/api/config"
 	"go-gin-template/api/model"
+
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -13,20 +14,21 @@ type UserRepository interface {
 	Delete(id uint) error
 }
 
-type userRepository struct{}
+type userRepository struct {
+	db *gorm.DB
+}
 
-func NewUserRepository() UserRepository {
-	return &userRepository{}
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepository{db: db}
 }
 
 func (r *userRepository) Create(user *model.User) error {
-	return config.DB.Create(user).Error
+	return r.db.Create(user).Error
 }
 
 func (r *userRepository) FindByID(id uint) (*model.User, error) {
 	var user model.User
-	err := config.DB.First(&user, id).Error
-	if err != nil {
+	if err := r.db.Preload("Password").Preload("Role").Preload("Accounts").First(&user, id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -34,17 +36,16 @@ func (r *userRepository) FindByID(id uint) (*model.User, error) {
 
 func (r *userRepository) FindByEmail(email string) (*model.User, error) {
 	var user model.User
-	err := config.DB.Where("email = ?", email).First(&user).Error
-	if err != nil {
+	if err := r.db.Preload("Password").Preload("Role").Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
 func (r *userRepository) Update(user *model.User) error {
-	return config.DB.Save(user).Error
+	return r.db.Save(user).Error
 }
 
 func (r *userRepository) Delete(id uint) error {
-	return config.DB.Delete(&model.User{}, id).Error
+	return r.db.Delete(&model.User{}, id).Error
 }

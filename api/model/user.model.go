@@ -5,13 +5,14 @@ import "time"
 // User represents a user in the system
 type User struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	Email     string    `gorm:"uniqueIndex;not null" json:"email"`
-	Password  string    `gorm:"not null" json:"-"` // Password is not included in JSON
-	Name      string    `gorm:"not null" json:"name"`
-	Phone     string    `json:"phone"`
+	Email     string    `gorm:"size:255;not null;unique" json:"email"`
+	Name      string    `gorm:"size:255;not null" json:"name"`
+	Phone     string    `gorm:"size:20" json:"phone"`
 	Address   string    `gorm:"type:text" json:"address"`
-	Role      string    `gorm:"default:'user'" json:"role"` // 'user' or 'admin'
-	Orders    []Order   `json:"orders,omitempty"`
+	RoleID    *uint     `gorm:"column:role_id" json:"role_id,omitempty"`
+	Role      *Role     `gorm:"foreignKey:RoleID" json:"role,omitempty"`
+	Password  *UserPassword `gorm:"foreignKey:UserID" json:"password,omitempty"`
+	Accounts  []Account `gorm:"foreignKey:UserID" json:"accounts,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

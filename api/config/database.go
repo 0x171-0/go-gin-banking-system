@@ -73,6 +73,7 @@ func InitDB() {
 	// 根據環境變量決定是否執行自動遷移
 	if autoMigrate {
 		log.Println("Automating database migration...")
+		// 使用更安全的遷移選項
 		err = DB.AutoMigrate(
 			&model.Book{},
 			&model.Category{},

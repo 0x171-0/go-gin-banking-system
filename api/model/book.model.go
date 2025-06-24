@@ -13,7 +13,7 @@ type Book struct {
 	// The author of the book
 	Author      string    `gorm:"not null" json:"author" example:"John Doe"`
 	// The ISBN of the book
-	ISBN        string    `gorm:"uniqueIndex" json:"isbn"`
+	ISBN        string    `gorm:"unique" json:"isbn"`
 	// The price of the book
 	Price       float64   `gorm:"not null" json:"price"`
 	// The stock quantity

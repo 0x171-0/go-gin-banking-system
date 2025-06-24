@@ -9,52 +9,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *gin.Engine {
-	r := gin.New()
+func InitRouter(userRepo repository.UserRepository, bookRepo repository.BookRepository) *gin.Engine {
+	r := gin.Default()
 
 	// Use recovery middleware
 	r.Use(gin.Recovery())
 
-	// Use custom access logger and error handler
-	r.Use(middleware.AccessLogger())
+	// Use custom error handler
 	r.Use(middleware.ErrorHandler())
 
 	// Book endpoints
-	bookRepo := repository.NewBookRepository()
 	bookService := service.NewBookService(bookRepo)
 	bookHandler := handler.NewBookHandler(bookService)
 
-	// Public book endpoints
 	r.GET("/books", bookHandler.GetBooks)
 	r.GET("/books/:id", bookHandler.GetBook)
-
-	// Protected book endpoints
-	bookGroup := r.Group("/books")
-	bookGroup.Use(middleware.AuthMiddleware())
-	{
-		bookGroup.POST("", bookHandler.CreateBook)
-	}
+	r.POST("/books", middleware.AuthMiddleware(), bookHandler.CreateBook)
+	r.PUT("/books/:id", middleware.AuthMiddleware(), bookHandler.UpdateBook)
+	r.DELETE("/books/:id", middleware.AuthMiddleware(), bookHandler.DeleteBook)
 
 	// User endpoints
-	userRepo := repository.NewUserRepository()
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	// Public user endpoints
-	userGroup := r.Group("/users")
-	{
-		userGroup.POST("/register", userHandler.Register)
-		userGroup.POST("/login", userHandler.Login)
-	}
-
-	// Protected user endpoints
-	protectedUserGroup := r.Group("/users")
-	protectedUserGroup.Use(middleware.AuthMiddleware())
-	{
-		// These endpoints require authentication and ownership/admin rights
-		protectedUserGroup.GET("/:id", middleware.OwnerOrAdminAuthMiddleware(), userHandler.GetProfile)
-		protectedUserGroup.PUT("/:id", middleware.OwnerOrAdminAuthMiddleware(), userHandler.UpdateProfile)
-	}
+	r.POST("/users/register", userHandler.Register)
+	r.POST("/users/login", userHandler.Login)
+	r.GET("/users/:id", middleware.AuthMiddleware(), userHandler.GetProfile)
+	r.PUT("/users/:id", middleware.AuthMiddleware(), userHandler.UpdateProfile)
 
 	return r
 }

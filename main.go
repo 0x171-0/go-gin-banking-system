@@ -3,7 +3,7 @@ package main
 import (
 	"go-gin-template/api"
 	"go-gin-template/api/config"
-	_ "go-gin-template/docs"
+	"go-gin-template/api/repository"
 	"log"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -13,7 +13,7 @@ import (
 // @title Book API
 // @version 1.0
 // @description This is a sample book service API
-// @host localhost:3003
+// @host localhost:8080
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth
@@ -21,11 +21,18 @@ import (
 // @name Authorization
 
 func main() {
-	// Initialize database connections
+	// Initialize database connection
 	config.InitDB()
+
+	// Initialize Redis connection
 	config.InitRedis()
 
-	r := api.InitRouter()
+	// Initialize repositories
+	bookRepo := repository.NewBookRepository(config.DB)
+	userRepo := repository.NewUserRepository(config.DB)
+
+	// Initialize router
+	r := api.InitRouter(userRepo, bookRepo)
 
 	// Swagger documentation endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

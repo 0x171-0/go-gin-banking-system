@@ -2,12 +2,12 @@ package model
 
 import "time"
 
-// Category represents a book category
-type Category struct {
+// Permission represents a system permission
+type Permission struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
-	Name        string    `gorm:"not null;unique" json:"name"`
+	Name        string    `gorm:"size:100;not null;unique" json:"name"`
 	Description string    `gorm:"type:text" json:"description"`
-	Books       []Book    `gorm:"foreignKey:CategoryID" json:"books,omitempty"`
+	Roles       []Role    `gorm:"many2many:role_permissions;" json:"roles,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

@@ -72,6 +72,12 @@ migrate-create: # 創建空的遷移文件，SQL 要自己填
 	@read -p "Enter migration name: " name; \
 	migrate create -ext sql -dir scripts/migrations -seq $$name
 
+# 重置數據庫
+db-reset:
+	@echo "重置數據庫..."
+	@echo "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" | docker-compose exec -T postgres psql -U postgres -d bookstore
+	@make migrate-up
+
 # 生成 Swagger 文檔
 doc:
 	@echo "生成 Swagger 文檔..."
