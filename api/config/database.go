@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"go-gin-template/api/model"
+
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,6 +19,8 @@ var (
 )
 
 func InitDB() {
+	// 連接數據庫
+
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		getEnvOrDefault("DB_HOST", "localhost"),
 		getEnvOrDefault("DB_USER", "postgres"),
@@ -40,6 +44,22 @@ func InitDB() {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	DB = db
+
+	// 自動遷移數據庫結構
+	log.Println("Automating database migration...")
+	err = DB.AutoMigrate(
+		&model.Book{},
+		&model.Category{},
+		&model.User{},
+		&model.Order{},
+		&model.OrderItem{},
+		&model.Cart{},
+		&model.CartItem{},
+	)
+	if err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
+	}
+	log.Println("Database migration completed successfully")
 }
 
 func InitRedis() {

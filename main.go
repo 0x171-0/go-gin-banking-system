@@ -3,7 +3,6 @@ package main
 import (
 	"go-gin-template/api"
 	"go-gin-template/api/config"
-	"go-gin-template/api/model"
 	_ "go-gin-template/docs"
 	"log"
 
@@ -21,11 +20,6 @@ func main() {
 	// Initialize database connections
 	config.InitDB()
 	config.InitRedis()
-
-	// Auto migrate database schema
-	if err := config.DB.AutoMigrate(&model.Book{}); err != nil {
-		log.Fatal("Failed to migrate database schema:", err)
-	}
 
 	r := api.InitRouter()
 
