@@ -3,7 +3,6 @@ package main
 import (
 	"go-gin-template/api"
 	"go-gin-template/api/config"
-	"go-gin-template/api/repository"
 	"log"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -27,12 +26,8 @@ func main() {
 	// Initialize Redis connection
 	config.InitRedis()
 
-	// Initialize repositories
-	bookRepo := repository.NewBookRepository(config.DB)
-	userRepo := repository.NewUserRepository(config.DB)
-
 	// Initialize router
-	r := api.InitRouter(userRepo, bookRepo)
+	r := api.InitRouter()
 
 	// Swagger documentation endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

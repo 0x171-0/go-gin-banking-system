@@ -1,6 +1,7 @@
 package api
 
 import (
+	"go-gin-template/api/config"
 	"go-gin-template/api/handler"
 	"go-gin-template/api/middleware"
 	"go-gin-template/api/repository"
@@ -9,7 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(userRepo repository.UserRepository, bookRepo repository.BookRepository) *gin.Engine {
+func InitRouter() *gin.Engine {
+	// Initialize repositories
+	bookRepo := repository.NewBookRepository(config.DB)
+	userRepo := repository.NewUserRepository(config.DB)
+	accountRepo := repository.NewAccountRepository(config.DB)
 	r := gin.Default()
 
 	// Use recovery middleware
@@ -29,13 +34,27 @@ func InitRouter(userRepo repository.UserRepository, bookRepo repository.BookRepo
 	r.DELETE("/books/:id", middleware.AuthMiddleware(), bookHandler.DeleteBook)
 
 	// User endpoints
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
+	accountService := service.NewAccountService(accountRepo)
 
-	r.POST("/users/register", userHandler.Register)
-	r.POST("/users/login", userHandler.Login)
-	r.GET("/users/:id", middleware.AuthMiddleware(), userHandler.GetProfile)
-	r.PUT("/users/:id", middleware.AuthMiddleware(), userHandler.UpdateProfile)
+	userService := service.NewUserService(userRepo, accountService)
+	userHandler := handler.NewUserHandler(userService)
+	users := r.Group("/users")
+	{
+		users.POST("/register", userHandler.Register)
+		users.POST("/login", userHandler.Login)
+		users.GET("/:id", middleware.AuthMiddleware(), userHandler.GetProfile)
+		users.PUT("/:id", middleware.AuthMiddleware(), userHandler.UpdateProfile)
+	}
+
+	// Account endpoints
+	accountHandler := handler.NewAccountHandler(accountService)
+	accounts := r.Group("/accounts", middleware.AuthMiddleware())
+	{
+		accounts.POST("", accountHandler.CreateAccount)
+		accounts.GET("", accountHandler.GetAccounts)
+		accounts.POST("/:id/deposit", accountHandler.Deposit)
+		accounts.POST("/:id/withdraw", accountHandler.Withdraw)
+	}
 
 	return r
 }

@@ -1,14 +1,35 @@
 basePath: /
 definitions:
-  dto.CreateBookRequest:
+  dto.AccountResponse:
     properties:
-      author:
-        description: The author of the book
-        example: Alan A. A. Donovan
+      balance:
+        example: 1000.5
+        type: number
+      id:
+        example: 1
+        type: integer
+      is_default:
+        example: true
+        type: boolean
+      name:
+        example: Savings Account
         type: string
-      title:
-        description: The title of the book
-        example: The Go Programming Language
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  dto.CreateAccountRequest:
+    properties:
+      name:
+        example: Savings Account
+        type: string
+    required:
+    - name
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        example: error message
         type: string
     type: object
   dto.LoginRequest:
@@ -53,6 +74,14 @@ definitions:
     - email
     - name
     - password
+    type: object
+  dto.TransactionRequest:
+    properties:
+      amount:
+        example: 100.5
+        type: number
+    required:
+    - amount
     type: object
   dto.UpdateUserRequest:
     properties:
@@ -152,17 +181,156 @@ definitions:
       updated_at:
         type: string
     type: object
-host: localhost:3003
+host: localhost:8080
 info:
   contact: {}
   description: This is a sample book service API
   title: Book API
   version: "1.0"
 paths:
-  /books:
+  /accounts:
     get:
       consumes:
       - application/json
+      description: Get all accounts of the authenticated user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.AccountResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get user accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a new account for the authenticated user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Account creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Create a new account
+      tags:
+      - accounts
+  /accounts/{id}/deposit:
+    post:
+      consumes:
+      - application/json
+      description: Deposit money to a specific account
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Deposit request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Deposit money
+      tags:
+      - accounts
+  /accounts/{id}/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: Withdraw money from a specific account
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Withdrawal request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AccountResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Withdraw money
+      tags:
+      - accounts
+  /books:
+    get:
       description: Get a list of all books
       produces:
       - application/json
@@ -186,7 +354,7 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateBookRequest'
+          $ref: '#/definitions/model.Book'
       produces:
       - application/json
       responses:
@@ -208,10 +376,40 @@ paths:
       tags:
       - books
   /books/{id}:
-    get:
-      consumes:
+    delete:
+      description: Delete a book by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
       - application/json
-      description: Get details of a specific book
+      responses:
+        "200":
+          description: Book deleted successfully
+          schema:
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+        "404":
+          description: Book not found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a book
+      tags:
+      - books
+    get:
+      description: Get a book's details by its ID
       parameters:
       - description: Book ID
         in: path
@@ -226,10 +424,50 @@ paths:
           schema:
             $ref: '#/definitions/model.Book'
         "404":
-          description: 找不到書籍
+          description: Book not found
           schema:
             type: object
       summary: Get a book by ID
+      tags:
+      - books
+    put:
+      consumes:
+      - application/json
+      description: Update a book's information by its ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book information
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            type: object
+        "404":
+          description: Book not found
+          schema:
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a book
       tags:
       - books
   /users/{id}:

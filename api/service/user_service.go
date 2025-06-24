@@ -19,10 +19,11 @@ type UserService interface {
 
 type userService struct {
 	userRepo repository.UserRepository
+	accountService AccountService
 }
 
-func NewUserService(userRepo repository.UserRepository) UserService {
-	return &userService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, accountService AccountService) UserService {
+	return &userService{userRepo: userRepo, accountService: accountService}
 }
 
 func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, error) {
@@ -50,6 +51,12 @@ func (s *userService) Register(req *dto.RegisterRequest) (*dto.UserResponse, err
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
+		return nil, err
+	}
+
+	// Create default account for new user
+	_, err = s.accountService.CreateDefaultAccount(user.ID)
+	if err != nil {
 		return nil, err
 	}
 

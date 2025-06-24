@@ -37,3 +37,22 @@ type LoginResponse struct {
 	User  UserResponse `json:"user"`
 	Token string      `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
+
+// CreateAccountRequest represents the request body for creating a new account
+type CreateAccountRequest struct {
+	Name string `json:"name" binding:"required" example:"Savings Account"`
+}
+
+// AccountResponse represents the response body for account information
+type AccountResponse struct {
+	ID        uint    `json:"id" example:"1"`
+	UserID    uint    `json:"user_id" example:"1"`
+	Name      string  `json:"name" example:"Savings Account"`
+	Balance   float64 `json:"balance" example:"1000.50"`
+	IsDefault bool    `json:"is_default" example:"true"`
+}
+
+// TransactionRequest represents the request body for deposit/withdrawal
+type TransactionRequest struct {
+	Amount float64 `json:"amount" binding:"required,gt=0" example:"100.50"`
+}
