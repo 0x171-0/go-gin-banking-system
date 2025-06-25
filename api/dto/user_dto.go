@@ -62,3 +62,42 @@ type TransferRequest struct {
 	Amount           float64 `json:"amount" binding:"required,gt=0" example:"100.50"`
 	TargetAccountID uint    `json:"target_account_id" binding:"required"`
 }
+
+// TransferInitRequest represents the request body for initiating transfer
+// Used by: POST /accounts/{id}/transfer/init
+type TransferInitRequest struct {
+	Amount           float64 `json:"amount" binding:"required,gt=0" example:"100.50"`
+	TargetAccountID uint    `json:"target_account_id" binding:"required"`
+	Description      string  `json:"description" example:"Payment for services"`
+}
+
+// VerificationRequest represents the request body for verification generation
+// Used by: POST /verifications
+type VerificationRequest struct {
+	TransactionID uint   `json:"transaction_id" binding:"required"`
+	Type          string `json:"type" binding:"required,oneof=email sms" example:"email"`
+}
+
+// VerificationVerifyRequest represents the request body for verification code verification
+// Used by: POST /verifications/{id}/verify
+type VerificationVerifyRequest struct {
+	Code string `json:"code" binding:"required,len=6" example:"123456"`
+}
+
+// TransferInitResponse represents the response body for transfer initiation
+// Used by: POST /accounts/{id}/transfer/init
+type TransferInitResponse struct {
+	TransactionID uint   `json:"transaction_id"`
+	Status        string `json:"status"`
+	Message       string `json:"message"`
+}
+
+// VerificationResponse represents the response body for verification operations
+// Used by: POST /verifications, POST /verifications/{id}/verify
+type VerificationResponse struct {
+	ID        uint   `json:"id"`
+	Success   bool   `json:"success"`
+	Message   string `json:"message"`
+	Type      string `json:"type"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
