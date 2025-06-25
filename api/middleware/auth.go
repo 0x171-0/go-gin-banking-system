@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"go-gin-template/api/config"
+	"go-gin-template/api/model"
 	"go-gin-template/api/util"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -77,6 +80,50 @@ func OwnerOrAdminAuthMiddleware() gin.HandlerFunc {
 		// Allow access if user is admin or the owner of the resource
 		if role != "admin" && resourceUserID != "" && userID != resourceUserID {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// AccountOwnershipGuard verifies if the user owns the account specified in the path parameter
+func AccountOwnershipGuard() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("userID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		// Check if user has admin role
+		role, _ := c.Get("userRole")
+		if role == "admin" {
+			c.Next()
+			return
+		}
+
+		// Get account ID from path parameter
+		accountIDStr := c.Param("id")
+		if accountIDStr == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Account ID is required"})
+			c.Abort()
+			return
+		}
+
+		accountID, err := strconv.ParseUint(accountIDStr, 10, 32)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+			c.Abort()
+			return
+		}
+
+		// Query the account to verify ownership
+		var account model.Account
+		if err := config.DB.Where("id = ? AND user_id = ?", accountID, userID).First(&account).Error; err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Account not found or access denied"})
 			c.Abort()
 			return
 		}
