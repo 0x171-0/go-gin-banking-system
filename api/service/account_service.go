@@ -13,15 +13,20 @@ type AccountService interface {
 	Deposit(userID, accountID uint, amount float64) (*dto.AccountResponse, error)
 	Withdraw(userID, accountID uint, amount float64) (*dto.AccountResponse, error)
 	Transfer(userID uint, sourceAccountID uint, targetAccountID uint, amount float64) (*dto.AccountResponse, error)
+	InitiateTransfer(userID uint, sourceAccountID uint, targetAccountID uint, amount float64) (*model.Transaction, error)
 	CreateDefaultAccount(userID uint) (*dto.AccountResponse, error)
 }
 
 type accountService struct {
-	accountRepo repository.AccountRepository
+	accountRepo     repository.AccountRepository
+	transactionRepo repository.TransactionRepository
 }
 
-func NewAccountService(accountRepo repository.AccountRepository) AccountService {
-	return &accountService{accountRepo: accountRepo}
+func NewAccountService(accountRepo repository.AccountRepository, transactionRepo repository.TransactionRepository) AccountService {
+	return &accountService{
+		accountRepo:     accountRepo,
+		transactionRepo: transactionRepo,
+	}
 }
 
 func (s *accountService) CreateAccount(userID uint, req *dto.CreateAccountRequest) (*dto.AccountResponse, error) {
@@ -162,6 +167,45 @@ func (s *accountService) CreateDefaultAccount(userID uint) (*dto.AccountResponse
 	}
 
 	return toAccountResponse(account), nil
+}
+
+func (s *accountService) InitiateTransfer(userID uint, sourceAccountID uint, targetAccountID uint, amount float64) (*model.Transaction, error) {
+	// Get source account
+	sourceAccount, err := s.accountRepo.FindByID(sourceAccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify ownership of source account
+	if sourceAccount.UserID != userID {
+		return nil, errors.New("unauthorized access to source account")
+	}
+
+	// Verify target account exists
+	_, err = s.accountRepo.FindByID(targetAccountID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check sufficient balance
+	if sourceAccount.Balance < amount {
+		return nil, errors.New("insufficient balance")
+	}
+
+	// Create pending transaction
+	transaction := &model.Transaction{
+		FromAccountID: &sourceAccountID,
+		ToAccountID:   &targetAccountID,
+		Amount:        amount,
+		Status:        model.TransactionStatusPending,
+		Type:          model.TransactionTypeTransfer,
+	}
+
+	if err := s.transactionRepo.Create(transaction); err != nil {
+		return nil, err
+	}
+
+	return transaction, nil
 }
 
 func toAccountResponse(account *model.Account) *dto.AccountResponse {

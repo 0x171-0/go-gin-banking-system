@@ -2,6 +2,7 @@ package repository
 
 import (
 	"go-gin-template/api/model"
+
 	"gorm.io/gorm"
 )
 

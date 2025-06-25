@@ -16,6 +16,7 @@ func InitRouter() *gin.Engine {
 	userRepo := repository.NewUserRepository(config.DB)
 	accountRepo := repository.NewAccountRepository(config.DB)
 	passwordRepo := repository.NewUserPasswordRepository(config.DB)
+	transactionRepo := repository.NewTransactionRepository(config.DB)
 	r := gin.Default()
 
 	// Use recovery middleware
@@ -35,7 +36,7 @@ func InitRouter() *gin.Engine {
 	r.DELETE("/books/:id", middleware.AuthMiddleware(), bookHandler.DeleteBook)
 
 	// User endpoints
-	accountService := service.NewAccountService(accountRepo)
+	accountService := service.NewAccountService(accountRepo, transactionRepo)
 
 	userService := service.NewUserService(userRepo, passwordRepo, accountService)
 	userHandler := handler.NewUserHandler(userService)

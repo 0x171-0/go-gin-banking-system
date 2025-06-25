@@ -179,3 +179,43 @@ func (h *AccountHandler) Transfer(c *gin.Context) {
 
 	c.JSON(http.StatusOK, account)
 }
+
+// @Summary Initiate transfer with verification
+// @Description Initiate a transfer that requires verification
+// @Tags accounts
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param id path int true "Source Account ID"
+// @Param request body dto.TransferInitRequest true "Transfer initiation request"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Router /accounts/{id}/transfer/init [post]
+func (h *AccountHandler) InitiateTransfer(c *gin.Context) {
+	userID := getUserIDFromContext(c)
+	sourceAccountID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid source account ID"})
+		return
+	}
+
+	var req dto.TransferInitRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	transaction, err := h.accountService.InitiateTransfer(userID, uint(sourceAccountID), req.TargetAccountID, req.Amount)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"transaction_id": transaction.ID,
+		"status":         transaction.Status,
+		"amount":         transaction.Amount,
+		"message":        "Transfer initiated. Please generate verification code to complete the transfer.",
+	})
+}
