@@ -23,7 +23,7 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Recovery())
 
 	// Use custom error handler
-	r.Use(middleware.ErrorHandler())
+	r.Use(middleware.ErrorInterceptor())
 
 	// Book endpoints
 	bookService := service.NewBookService(bookRepo)
@@ -31,9 +31,9 @@ func InitRouter() *gin.Engine {
 
 	r.GET("/books", bookHandler.GetBooks)
 	r.GET("/books/:id", bookHandler.GetBook)
-	r.POST("/books", middleware.AuthMiddleware(), bookHandler.CreateBook)
-	r.PUT("/books/:id", middleware.AuthMiddleware(), bookHandler.UpdateBook)
-	r.DELETE("/books/:id", middleware.AuthMiddleware(), bookHandler.DeleteBook)
+	r.POST("/books", middleware.AuthGuard(), bookHandler.CreateBook)
+	r.PUT("/books/:id", middleware.AuthGuard(), bookHandler.UpdateBook)
+	r.DELETE("/books/:id", middleware.AuthGuard(), bookHandler.DeleteBook)
 
 	// User endpoints
 	accountService := service.NewAccountService(accountRepo, transactionRepo)
@@ -44,13 +44,13 @@ func InitRouter() *gin.Engine {
 	{
 		users.POST("/login", userHandler.Login)
 		users.POST("/register", userHandler.Register)
-		users.GET("/:id", middleware.AuthMiddleware(), userHandler.GetProfile)
-		users.PUT("/:id", middleware.AuthMiddleware(), userHandler.UpdateProfile)
+		users.GET("/:id", middleware.AuthGuard(), userHandler.GetProfile)
+		users.PUT("/:id", middleware.AuthGuard(), userHandler.UpdateProfile)
 	}
 
 	// Account endpoints
 	accountHandler := handler.NewAccountHandler(accountService)
-	accounts := r.Group("/accounts", middleware.AuthMiddleware())
+	accounts := r.Group("/accounts", middleware.AuthGuard())
 	{
 		accounts.POST("", accountHandler.CreateAccount)
 		accounts.GET("", accountHandler.GetAccounts)

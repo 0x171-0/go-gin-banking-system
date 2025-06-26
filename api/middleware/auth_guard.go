@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthMiddleware verifies the JWT token and sets user information in the context
-func AuthMiddleware() gin.HandlerFunc {
+// AuthGuard verifies the JWT token and sets user information in the context
+func AuthGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -44,8 +44,8 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// AdminAuthMiddleware verifies if the user has admin role
-func AdminAuthMiddleware() gin.HandlerFunc {
+// AdminAuthGuard verifies if the user has admin role
+func AdminAuthGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("userRole")
 		if !exists {
@@ -64,8 +64,8 @@ func AdminAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// OwnerOrAdminAuthMiddleware verifies if the user is the owner of the resource or an admin
-func OwnerOrAdminAuthMiddleware() gin.HandlerFunc {
+// OwnerOrAdminAuthGuard verifies if the user is the owner of the resource or an admin
+func OwnerOrAdminAuthGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exists := c.Get("userID")
 		if !exists {

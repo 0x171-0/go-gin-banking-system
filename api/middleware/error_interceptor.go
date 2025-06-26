@@ -28,8 +28,8 @@ func NewAppError(code int, message string) *AppError {
 	}
 }
 
-// ErrorHandler is a middleware that handles errors returned from routes
-func ErrorHandler() gin.HandlerFunc {
+// ErrorInterceptor is a middleware that handles errors returned from routes
+func ErrorInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Execute request handlers
 		c.Next()

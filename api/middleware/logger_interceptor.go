@@ -21,8 +21,8 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// AccessLogger middleware logs non-200 requests and responses
-func AccessLogger() gin.HandlerFunc {
+// AccessLoggerInterceptor middleware logs non-200 requests and responses
+func AccessLoggerInterceptor() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
