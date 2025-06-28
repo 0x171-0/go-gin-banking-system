@@ -10,4 +10,8 @@ type NotificationSender interface {
 type NotificationService interface {
 	SendVerificationCode(notificationType, to, code string) error
 	GetSender(notificationType string) (NotificationSender, error)
+	RegisterSender(sender NotificationSender)
+	GetAvailableTypes() []string
+	// WaitForCompletion waits for all asynchronous notification operations to complete
+	WaitForCompletion()
 }

@@ -54,3 +54,17 @@ func (n *notificationService) GetAvailableTypes() []string {
 	}
 	return types
 }
+
+// WaitForCompletion waits for all asynchronous notification operations to complete
+func (n *notificationService) WaitForCompletion() {
+	// Wait for email sender to complete all operations
+	if emailSender, ok := n.senders["email"].(*EmailSender); ok {
+		emailSender.WaitForCompletion()
+	}
+	
+	// If there are other asynchronous senders, wait for them here
+	// For example, if SMS sender also uses goroutines:
+	// if smsSender, ok := n.senders["sms"].(*SMSSender); ok {
+	//     smsSender.WaitForCompletion()
+	// }
+}
